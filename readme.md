@@ -87,6 +87,6 @@ The current system is focused on reliable code capture. Future updates will impr
 
 ## Contribute or Stay Updated
 
-This project is open-source, and contributions are welcome! Whether it's optimizing the code, suggesting features, or helping with testing, your input is valuable. Follow updates and access source code at **[GitHub Repository Link Placeholder]**.
+This project is open-source, and contributions are welcome! Whether it's optimizing the code, suggesting features, or helping with testing, your input is valuable. Follow updates and access source code at **[(https://github.com/GthiN89/NucleusGateKeeper)]**.
 
 Happy hacking!
