@@ -15,7 +15,7 @@ Most of the core functionality is already part of the Nucleus codebase, enabling
 
 ## Features Implemented
 
-### Code Capture
+### Code Capture *will be done in matter of hours*
 - **Autonomous RF Code Capture**: The device independently detects and saves Sub-GHz signals.
 - **SD Card Integration**: Captured codes are stored on an SD card for easy retrieval and analysis.
 - **Flipper Zero Compatibility**: Captured codes are saved in `.sub` format, compatible with Flipper Zero for replay or analysis.
