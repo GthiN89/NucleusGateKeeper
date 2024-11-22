@@ -1,0 +1,36 @@
+# Nucleus License (GPL-inspired)
+
+**Nucleus One / Nucleus ESP32 License**  
+Version 1.0, November 2024
+
+**Copyright (c) 2024, Petr Bělohoubek**
+
+This software is licensed under terms that allow for modification, sharing, and contribution, with certain restrictions on commercial redistribution.
+
+### 1. Permissions
+You are allowed to use, modify, and distribute copies of this software, with or without modification, under the following conditions:
+
+- **Open Access**: You may freely use this software for personal, educational, and internal business purposes.
+- **Modifications and Contributions**: You may publish modified versions or contribute changes back to the original project, as long as attribution is given to the original author and contributors.
+
+### 2. Restrictions on Commercial Redistribution and Resale
+This software is provided free of charge for use, but with the following restrictions:
+
+- **Prohibition on Commercial Sale**: You may not sell, license, or commercially distribute this software, modified or unmodified, without explicit permission from Petr Bělohoubek.
+- **Cloning and Productization Restriction**: You may not incorporate this software into another product intended for direct commercial resale without obtaining a separate commercial license from Petr Bělohoubek.
+
+### 3. Permitted Use for Gifts and Non-Commercial Sharing
+You are encouraged to:
+- Use this software in personal projects, including commercial internal operations, provided it is not directly resold.
+- Share modifications as gifts or non-commercial contributions without charge, maintaining the terms of this license.
+
+### 4. Contribution and Attribution Requirements
+- Any derivative works based on this software must retain this license and provide attribution to the original project, Nucleus One / Nucleus ESP32.
+- Publicly shared modifications must include this license and be available for further sharing under these same terms.
+
+### 5. Contact for Commercial Licensing
+Entities interested in commercial distribution or incorporation into products for sale should contact Petr Bělohoubek at Petr.Belohoubekm89@gmail.com for commercial licensing.
+
+### Disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
