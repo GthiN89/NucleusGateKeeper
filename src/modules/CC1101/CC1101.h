@@ -14,7 +14,7 @@
 #define SAMPLE_SIZE 512
 
 // Pin configuration for CC1101
-#define CC1101_CS   16  // Chip Select
+#define CC1101_CS   14  // Chip Select
 #define CC1101_MOSI 13   // Master Out Slave In
 #define CC1101_MISO 12  // Master In Slave Out
 #define CC1101_SCLK 27  // Serial Clock
@@ -46,17 +46,6 @@ enum CC1101_PRESET {
 extern CC1101_PRESET  C1101preset;
 
 // C1101 state mashine
-
-enum C1101State
-{
-  STATE_IDLE,
-  STATE_CAPTURE,
-  STATE_CAPTURE_COMPLETE,
-  STATE_SIGNAL_ANALYZER,
-  STATE_SIGNAL_ANALYZER_COMPLETE,
-  STATE_FILE_OPERATION,
-  STATE_READY_TO_ACTION
-};
 
 // Current State
 extern uint8_t C1101CurrentState;
@@ -105,24 +94,23 @@ public:
     void setCC1101Preset(CC1101_PRESET preset);
     void enableReceiver();
     void signalanalyse();
+    bool CheckReceived(void);
+    void setFrequency(float freq);
 
 
 private:
-    //classes
 
+    //classes
     SPIClass CC1101SPI;
     RCSwitch mySwitch;
     
-    //variables  
-    
+    //variables      
     int smoothcount;
     unsigned long samplesmooth[SAMPLE_SIZE];
     String rawString = "";
     int minsample = 15;
 
     //methods
-    
-    bool CheckReceived(void);
     void loadPreset();
     void decodeProtocol(uint16_t *pulseTrain, size_t length);
 

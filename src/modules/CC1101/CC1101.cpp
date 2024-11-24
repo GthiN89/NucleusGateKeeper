@@ -1,4 +1,5 @@
 #include "CC1101.h"
+#include "main.h"
 
 //outher class variables *not feel right, will do differentely in future
 
@@ -23,6 +24,10 @@ bool CC1101_recieve_is_running = false;
 bool CC1101_transmit_is_running = false;
 bool CC1101_isiddle = true;
 bool CC1101_interup_attached = false;
+
+
+CC1101_PRESET  C1101preset;
+
 
   ////////////////////
  //////Protocols/////
@@ -73,6 +78,7 @@ String protDecode[]={
 
 void IRAM_ATTR InterruptHandler()
 {  
+
     if (!receiverEnabled)
     {
         return;
@@ -112,7 +118,7 @@ bool CC1101_CLASS::CheckReceived()
     if (samplecount >= minsample && micros() - lastTime > 100000)
     {
         receiverEnabled = false;
-        C1101CurrentState = STATE_CAPTURE_COMPLETE;
+        gateKeeperState = STATE_CAPTURE_COMPLETE;
         return 1;
     }
     else
@@ -228,10 +234,14 @@ void CC1101_CLASS::loadPreset() {
          CC1101_SYNC = 7;
          break;
     default:
-        Serial.println(CC1101_MODULATION);
+          CC1101_MODULATION = 2;
+         CC1101_DRATE = 3.79372;
+         CC1101_RX_BW = 650.00;
+         CC1101_DEVIATION = 1.58;
         break;
     }
     Serial.print("preset loaded");
+    delay(20);
 }
 
 void CC1101_CLASS::enableReceiver()
@@ -241,21 +251,21 @@ void CC1101_CLASS::enableReceiver()
     }
     CC1101_CLASS::loadPreset();
 
+
+
     memset(sample, 0, sizeof(SAMPLE_SIZE));
     samplecount = 0;
 
     if (CC1101_MODULATION == 2)
     {
         ELECHOUSE_cc1101.setDcFilterOff(0);
-    }
+    } 
 
     if (CC1101_MODULATION == 0)
     {
         ELECHOUSE_cc1101.setDcFilterOff(1);
     }
 
-
-    ELECHOUSE_cc1101.setDcFilterOff(1);
     ELECHOUSE_cc1101.setSyncMode(CC1101_SYNC);  // Combined sync-word qualifier mode. 0 = No preamble/sync. 1 = 16 sync word bits detected. 2 = 16/16 sync word bits detected. 3 = 30/32 sync word bits detected. 4 = No preamble/sync, carrier-sense above threshold. 5 = 15/16 + carrier-sense above threshold. 6 = 16/16 + carrier-sense above threshold. 7 = 30/32 + carrier-sense above threshold.
     ELECHOUSE_cc1101.setPktFormat(CC1101_PKT_FORMAT); // Format of RX and TX data. 0 = Normal mode, use FIFOs for RX and TX.
                                                       // 1 = Synchronous serial mode, Data in on GDO0 and data out on either of the GDOx pins.
@@ -267,8 +277,6 @@ void CC1101_CLASS::enableReceiver()
     ELECHOUSE_cc1101.setDeviation(CC1101_DEVIATION);
     ELECHOUSE_cc1101.setDRate(CC1101_DRATE); // Set the Data Rate in kBaud. Value from 0.02 to 1621.83. Default is 99.97 kBaud!
     ELECHOUSE_cc1101.setRxBW(CC1101_RX_BW);  // Set the Receive Bandwidth in kHz. Value from 58.03 to 812.50. Default is 812.50 kHz.
- 
-    
     pinMode(CC1101_CCGDO0A, INPUT);
     receiverGPIO = digitalPinToInterrupt(CC1101_CCGDO0A);    
     ELECHOUSE_cc1101.SetRx();
@@ -276,8 +284,16 @@ void CC1101_CLASS::enableReceiver()
     receiverEnabled = true;
     //////////////////////////////
     attachInterrupt(CC1101_CCGDO0A, InterruptHandler, CHANGE);
-    C1101CurrentState = STATE_CAPTURE;
+    Serial.print("interrupt active");
+
 }
+
+void CC1101_CLASS::setFrequency(float freq)
+{
+    CC1101_MHZ = freq;
+    ELECHOUSE_cc1101.setMHZ(CC1101_MHZ);
+}
+
 
 void CC1101_CLASS::signalanalyse(){
  #define signalstorage 10
@@ -418,7 +434,7 @@ Serial.println("");
 
 decodeProtocol(pulseTrain, length);
         
-C1101CurrentState = STATE_SIGNAL_ANALYZER_COMPLETE;
+gateKeeperState = STATE_SIGNAL_ANALYZER_COMPLETE;
 }
 
 void CC1101_CLASS::decodeProtocol(uint16_t *pulseTrain, size_t length) {

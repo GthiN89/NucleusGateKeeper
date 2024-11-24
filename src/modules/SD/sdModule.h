@@ -2,7 +2,7 @@
 #define SD_HEADER
 
 #include "Arduino.h"
-#include "SdFat.h"
+#include "SDfat.h"
 #include "sdios.h"
 
 #define SD_MOSI 23
@@ -21,7 +21,7 @@ static ArduinoOutStream cout(Serial);
 
 class SDcard {
     public:
-        SdFs sd;
+        SdFat sd;
         cid_t cid;
         csd_t csd;
         scr_t scr;
@@ -32,6 +32,8 @@ class SDcard {
         bool sdinit();
         void cidDmp(); 
         void csdDmp();
+        bool directoryExists(const char* dirPath); 
+        bool createDirectory(const char* createDirectory);
 
     private:
 

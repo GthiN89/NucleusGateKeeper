@@ -1,0 +1,33 @@
+{
+	"folders": [
+		{
+			"name": "gateKeeper",
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"array": "cpp",
+			"deque": "cpp",
+			"string": "cpp",
+			"unordered_map": "cpp",
+			"unordered_set": "cpp",
+			"vector": "cpp",
+			"string_view": "cpp",
+			"initializer_list": "cpp",
+			"*.tcc": "cpp",
+			"system_error": "cpp",
+			"random": "cpp",
+			"fstream": "cpp",
+			"iostream": "cpp",
+			"istream": "cpp",
+			"limits": "cpp",
+			"new": "cpp",
+			"ostream": "cpp",
+			"ratio": "cpp",
+			"stdexcept": "cpp",
+			"streambuf": "cpp",
+			"functional": "cpp"
+		}
+	}
+}
