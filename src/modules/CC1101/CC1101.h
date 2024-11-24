@@ -5,6 +5,7 @@
 #include "SPI.h"
 #include "ELECHOUSE_CC1101_SRC_DRV.h"
 #include "RCSwitch.h"
+#include "main.h"
 
 #include <sstream>
 #include <ctime>
@@ -21,29 +22,16 @@
 
 #define CC1101_CCGDO0A 33      // GDO0
 
+
+
    //---------------------------------------------------------------------------//
   //-----------------------------ENUMBS----------------------------------------//
  //---------------------------------------------------------------------------//
 
 // C1101 presets
 
-enum CC1101_PRESET {
-     AM650,
-     AM270,
-     FM238,
-     FM476,
-     FM95,
-     FSK12k,
-     FM15k,
-     FSK25k,
-     FSK31k,
-     PAGER,
-     HND1,
-     HND2,
-     CUSTOM
- };
 
-extern CC1101_PRESET  C1101preset;
+
 
 // C1101 state mashine
 
@@ -84,7 +72,7 @@ extern int CC1101_SYNC;
 extern float CC1101_FREQ;
 extern int CC1101_MODULATION;
 extern float CC1101_MHZ;
-
+extern String rawString;
 class CC1101_CLASS {
 public:
 
@@ -96,7 +84,9 @@ public:
     void signalanalyse();
     bool CheckReceived(void);
     void setFrequency(float freq);
-
+    String generateFilename(float frequency, int modulation, float bandwidth);
+    String generateRandomString(int length);
+    const char* presetToString(CC1101_PRESET preset);
 
 private:
 

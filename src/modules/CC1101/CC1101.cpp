@@ -1,5 +1,12 @@
 #include "CC1101.h"
 #include "main.h"
+#include "SD.h"
+#include "FlipperSubFile.h"
+
+#define SD_MOSI 23
+#define SD_MISO 19
+#define SD_CLK  18
+#define SD_CS   5
 
 //outher class variables *not feel right, will do differentely in future
 
@@ -26,7 +33,7 @@ bool CC1101_isiddle = true;
 bool CC1101_interup_attached = false;
 
 
-CC1101_PRESET  C1101preset;
+
 
 
   ////////////////////
@@ -421,8 +428,8 @@ for (size_t i = 0; i < smoothcount; i++) {
     pulseTrain[i] = static_cast<uint16_t>(samplesmooth[i]);
 }
 
-String rawString = "";
 
+String rawString = "";
 Serial.println("");
     for (int i = 0; i < smoothcount; i++) {
             rawString += (i > 0 ? (i % 2 == 1 ? " -" : " ") : "");
@@ -430,11 +437,45 @@ Serial.println("");
             Serial.print(samplesmooth[i]);
             Serial.print(", ");
         }
-Serial.println("");
+
 
 decodeProtocol(pulseTrain, length);
         
-gateKeeperState = STATE_SIGNAL_ANALYZER_COMPLETE;
+   delay(100);
+        Serial.println(rawString);
+           delay(100);
+         SD.begin(SD_CS);
+         FlipperSubFile subFile;
+    
+
+
+
+String filename = generateFilename(CC1101_MHZ, CC1101_MODULATION, CC1101_RX_BW);
+String fullPath = "/ReceivedCodes/" + filename;
+
+
+File outputFile = SD.open(fullPath, FILE_WRITE);
+if (outputFile) {
+    std::vector<byte> customPresetData;
+    if (C1101preset == CUSTOM) {
+        customPresetData.insert(customPresetData.end(), {
+            CC1101_MDMCFG4, ELECHOUSE_cc1101.SpiReadReg(CC1101_MDMCFG4),
+            CC1101_MDMCFG3, ELECHOUSE_cc1101.SpiReadReg(CC1101_MDMCFG3),
+            CC1101_MDMCFG2, ELECHOUSE_cc1101.SpiReadReg(CC1101_MDMCFG2),
+            CC1101_DEVIATN, ELECHOUSE_cc1101.SpiReadReg(CC1101_DEVIATN),
+            CC1101_FREND0,  ELECHOUSE_cc1101.SpiReadReg(CC1101_FREND0),
+            0x00, 0x00
+        });
+
+        std::array<byte, 8> paTable;
+        ELECHOUSE_cc1101.SpiReadBurstReg(0x3E, paTable.data(), paTable.size());
+        customPresetData.insert(customPresetData.end(), paTable.begin(), paTable.end());
+    }
+    subFile.generateRaw(outputFile, C1101preset, customPresetData, rawString, CC1101_MHZ);
+    outputFile.close();
+    SD.end();
+  gateKeeperState = STATE_INIT_SUCESS;
+}
 }
 
 void CC1101_CLASS::decodeProtocol(uint16_t *pulseTrain, size_t length) {
@@ -528,4 +569,48 @@ void CC1101_CLASS::decodeProtocol(uint16_t *pulseTrain, size_t length) {
             }
         }
     }
+}
+
+String CC1101_CLASS::generateFilename(float frequency, int modulation, float bandwidth)
+{
+    char filenameBuffer[32];
+
+    sprintf(filenameBuffer, "%d_%s_%s.sub", static_cast<int>(frequency * 100), presetToString(C1101preset),
+            generateRandomString(8).c_str());
+
+    return String(filenameBuffer);
+}
+
+const char* CC1101_CLASS::presetToString(CC1101_PRESET preset) {
+    switch (preset) {
+        case AM650: return "AM650";
+        case AM270: return "AM270";
+        case FM238: return "FM238";
+        case FM476: return "FM476";
+        case FM95:  return "FM95";
+        case FSK12k: return "FSK12k";
+        case FM15k: return "FM15k";
+        case FSK25k: return "FSK25k";
+        case FSK31k: return "FSK31k";
+        case PAGER: return "PAGER";
+        case HND1:  return "HND1";
+        case HND2:  return "HND2";
+        default:    return "Unknown";
+    }
+}
+
+String CC1101_CLASS::generateRandomString(int length)
+{
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+
+    const std::string characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    std::stringstream ss;
+    for (int i = 0; i < length; ++i) {
+        int randomIndex = std::rand() % characters.size();
+        char randomChar = characters[randomIndex];
+        ss << randomChar;
+    }
+
+    return String(ss.str().c_str());
 }

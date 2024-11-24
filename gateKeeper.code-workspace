@@ -27,7 +27,9 @@
 			"ratio": "cpp",
 			"stdexcept": "cpp",
 			"streambuf": "cpp",
-			"functional": "cpp"
+			"functional": "cpp",
+			"map": "cpp",
+			"sstream": "cpp"
 		}
 	}
 }

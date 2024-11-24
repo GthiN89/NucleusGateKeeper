@@ -6,6 +6,7 @@
 #include "main.h"
 #include "modules/CC1101/CC1101.h"
 
+
 // Define SPI pins
 #define SD_MOSI 23
 #define SD_MISO 19
@@ -17,6 +18,8 @@
 
 KEEPER_STATE gateKeeperState;
 CC1101_CLASS CC1101;
+
+CC1101_PRESET  C1101preset;
 
 void testFileOperations() {
     // Check if the test file exists
@@ -83,6 +86,7 @@ void testFileOperations() {
             gateKeeperState = STATE_SDCARD_EROOR;
             return;
         }
+        SD.end();
 }
 
 void setup() {
@@ -137,9 +141,11 @@ void loop() {
         if (CC1101.CheckReceived()) {
             Serial.println(F("Signal received."));
             CC1101.signalanalyse();
-            gateKeeperState = STATE_FILE_OPERATION;
+            gateKeeperState = STATE_INIT_SUCESS;;
         }
     }
+
+
 
     if (gateKeeperState == STATE_SDCARD_EROOR) {
         Serial.println(F("SD card error detected. Restarting initialization..."));
