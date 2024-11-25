@@ -32,6 +32,10 @@ bool CC1101_transmit_is_running = false;
 bool CC1101_isiddle = true;
 bool CC1101_interup_attached = false;
 
+String decodedProtocol = "";
+bool isDecoded = false;
+
+
 
 
 
@@ -518,8 +522,13 @@ decodeProtocol(pulseTrain, length);
 
 
 String filename = generateFilename(CC1101_MHZ, CC1101_MODULATION, CC1101_RX_BW);
-String fullPath = "/ReceivedCodes/" + filename;
+String fullPath;
 
+if(isDecoded) {
+   fullPath = "/ReceivedCodes/" + decodedProtocol + filename;
+} else {
+   fullPath = "/ReceivedCodes/" + filename;
+}
 
 File outputFile = SD.open(fullPath, FILE_WRITE);
 if (outputFile) {
@@ -595,6 +604,8 @@ void CC1101_CLASS::decodeProtocol(uint16_t *pulseTrain, size_t length) {
     for (int protocol = 1; protocol <= mySwitch.getNumProtos(); protocol++) {
         if (mySwitch.receiveProtocol(protocol, length)) {
             knownProtocol = true;
+            isDecoded = true;
+            decodedProtocol = protDecode[protocol];
             unsigned long long receivedValue = mySwitch.getReceivedValue();
             Serial.println("Decoded Signal:");
             Serial.print("Protocol: ");
