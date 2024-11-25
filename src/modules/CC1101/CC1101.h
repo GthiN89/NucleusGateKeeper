@@ -86,7 +86,15 @@ public:
     void setFrequency(float freq);
     String generateFilename(float frequency, int modulation, float bandwidth);
     String generateRandomString(int length);
+    String getPresetSettingsString();
+    String getFrequeSettingsString();
     const char* presetToString(CC1101_PRESET preset);
+    CC1101_PRESET convert_str_to_enum(const char * selected_str);
+    bool isValidPreset(CC1101_PRESET preset);
+    void loadPreset(CC1101_PRESET preset);
+    void setCC1101DCcorrection(int v);
+ 
+
 
 private:
 
@@ -98,10 +106,10 @@ private:
     int smoothcount;
     unsigned long samplesmooth[SAMPLE_SIZE];
     String rawString = "";
-    int minsample = 15;
+    int minsample = 30;
 
     //methods
-    void loadPreset();
+   
     void decodeProtocol(uint16_t *pulseTrain, size_t length);
 
 

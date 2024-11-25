@@ -32,6 +32,10 @@ bool CC1101_transmit_is_running = false;
 bool CC1101_isiddle = true;
 bool CC1101_interup_attached = false;
 
+String decodedProtocol = "";
+bool isDecoded = false;
+
+
 
 
 
@@ -83,6 +87,51 @@ String protDecode[]={
     "39 Louvolite with premable"
 };
 
+const char* CC1101_CLASS::presetToString(CC1101_PRESET preset) {
+    switch (preset) {
+        case AM650: return "AM650";
+        case AM270: return "AM270";
+        case FM238: return "FM238";
+        case FM476: return "FM476";
+        case FM95:  return "FM95";
+        case FSK12k: return "FSK12k";
+        case FM15k: return "FM15k";
+        case FSK25k: return "FSK25k";
+        case FSK31k: return "FSK31k";
+        case PAGER: return "PAGER";
+        case HND1:  return "HND1";
+        case HND2:  return "HND2";
+        default:    return "Unknown";
+    }
+}
+
+CC1101_PRESET CC1101_CLASS::convert_str_to_enum(const char * selected_str) {
+    if (strcmp(selected_str, "AM650") == 0) return AM650;
+    else if (strcmp(selected_str, "AM270") == 0) return AM270;
+    else if (strcmp(selected_str, "FM238") == 0) return FM238;
+    else if (strcmp(selected_str, "FM476") == 0) return FM476;
+    else if (strcmp(selected_str, "FM95") == 0) return FM95;
+    else if (strcmp(selected_str, "FSK12k") == 0) return FSK12k;
+    else if (strcmp(selected_str, "FM15k") == 0) return FM15k;
+    else if (strcmp(selected_str, "FSK25k") == 0) return FSK25k;
+    else if (strcmp(selected_str, "FSK31k") == 0) return FSK31k;
+    else if (strcmp(selected_str, "PAGER") == 0) return PAGER;
+    else if (strcmp(selected_str, "HND1") == 0) return HND1;
+    else if (strcmp(selected_str, "HND2") == 0) return HND2;
+    else return CUSTOM;  // Default to CUSTOM if no match is found
+}
+
+
+String CC1101_CLASS::getPresetSettingsString() {
+
+ return String(presetToString(C1101preset));
+}
+
+String CC1101_CLASS::getFrequeSettingsString() {
+  return String(CC1101_FREQ);
+}
+
+
 void IRAM_ATTR InterruptHandler()
 {  
 
@@ -125,7 +174,6 @@ bool CC1101_CLASS::CheckReceived()
     if (samplecount >= minsample && micros() - lastTime > 100000)
     {
         receiverEnabled = false;
-        gateKeeperState = STATE_CAPTURE_COMPLETE;
         return 1;
     }
     else
@@ -158,10 +206,36 @@ bool CC1101_CLASS::init()
 
 void CC1101_CLASS::setCC1101Preset(CC1101_PRESET preset) {
     C1101preset = preset;
+    delay(20);
 }
 
-void CC1101_CLASS::loadPreset() {
-    switch (C1101preset) {
+bool CC1101_CLASS::isValidPreset(CC1101_PRESET preset) {
+    switch (preset) {
+        case AM650:
+        case AM270:
+        case FM238:
+        case FM476:
+        case FM95:
+        case FSK12k:
+        case FM15k:
+        case FSK25k:
+        case FSK31k:
+        case PAGER:
+        case HND1:
+        case HND2:
+        case CUSTOM:
+            return true;
+        default:
+            return false;
+    }
+}
+
+void CC1101_CLASS::setCC1101DCcorrection(int v) {
+    ELECHOUSE_cc1101.setDcFilterOff(v);
+}
+
+void CC1101_CLASS::loadPreset(CC1101_PRESET preset) {
+    switch (preset) {
     case AM650:
          CC1101_MODULATION = 2;
          CC1101_DRATE = 3.79372;
@@ -210,8 +284,7 @@ void CC1101_CLASS::loadPreset() {
          CC1101_MODULATION = 0;       
          CC1101_DRATE = 25.39;        
          CC1101_RX_BW = 200;          
-         CC1101_DEVIATION = 25.39;    
-         CC1101_SYNC = 0x47;          
+         CC1101_DEVIATION = 25.39;            
          break;     
     case FSK31k:
          CC1101_MODULATION = 0;       
@@ -241,10 +314,7 @@ void CC1101_CLASS::loadPreset() {
          CC1101_SYNC = 7;
          break;
     default:
-          CC1101_MODULATION = 2;
-         CC1101_DRATE = 3.79372;
-         CC1101_RX_BW = 650.00;
-         CC1101_DEVIATION = 1.58;
+    Serial.println(CC1101_MODULATION);
         break;
     }
     Serial.print("preset loaded");
@@ -255,8 +325,9 @@ void CC1101_CLASS::enableReceiver()
 {
     if (!CC1101_is_initialized) {
         CC1101_CLASS::init();
+        //CC1101_CLASS::loadPreset();
     }
-    CC1101_CLASS::loadPreset();
+
 
 
 
@@ -273,8 +344,8 @@ void CC1101_CLASS::enableReceiver()
         ELECHOUSE_cc1101.setDcFilterOff(1);
     }
 
-    ELECHOUSE_cc1101.setSyncMode(CC1101_SYNC);  // Combined sync-word qualifier mode. 0 = No preamble/sync. 1 = 16 sync word bits detected. 2 = 16/16 sync word bits detected. 3 = 30/32 sync word bits detected. 4 = No preamble/sync, carrier-sense above threshold. 5 = 15/16 + carrier-sense above threshold. 6 = 16/16 + carrier-sense above threshold. 7 = 30/32 + carrier-sense above threshold.
-    ELECHOUSE_cc1101.setPktFormat(CC1101_PKT_FORMAT); // Format of RX and TX data. 0 = Normal mode, use FIFOs for RX and TX.
+    ELECHOUSE_cc1101.setSyncMode(0);  // Combined sync-word qualifier mode. 0 = No preamble/sync. 1 = 16 sync word bits detected. 2 = 16/16 sync word bits detected. 3 = 30/32 sync word bits detected. 4 = No preamble/sync, carrier-sense above threshold. 5 = 15/16 + carrier-sense above threshold. 6 = 16/16 + carrier-sense above threshold. 7 = 30/32 + carrier-sense above threshold.
+    ELECHOUSE_cc1101.setPktFormat(3); // Format of RX and TX data. 0 = Normal mode, use FIFOs for RX and TX.
                                                       // 1 = Synchronous serial mode, Data in on GDO0 and data out on either of the GDOx pins.
                                                       // 2 = Random TX mode; sends random data using PN9 generator. Used for test. Works as normal mode, setting 0 (00), in RX.
                                                       // 3 = Asynchronous serial mode, Data in on GDO0 and data out on either of the GDOx pins.
@@ -451,8 +522,13 @@ decodeProtocol(pulseTrain, length);
 
 
 String filename = generateFilename(CC1101_MHZ, CC1101_MODULATION, CC1101_RX_BW);
-String fullPath = "/ReceivedCodes/" + filename;
+String fullPath;
 
+if(isDecoded) {
+   fullPath = "/ReceivedCodes/" + decodedProtocol + filename;
+} else {
+   fullPath = "/ReceivedCodes/" + filename;
+}
 
 File outputFile = SD.open(fullPath, FILE_WRITE);
 if (outputFile) {
@@ -489,7 +565,7 @@ void CC1101_CLASS::decodeProtocol(uint16_t *pulseTrain, size_t length) {
 
     // Separate single code by identifing of pause
     for (size_t i = 0; i < length; i++) {
-        if (pulseTrain[i] > 2500) {
+        if (pulseTrain[i] > 5000) {
             if (!foundSeparator) {
                 foundSeparator = true;
                 startIndex = i + 1;
@@ -523,11 +599,13 @@ void CC1101_CLASS::decodeProtocol(uint16_t *pulseTrain, size_t length) {
     for (size_t i = 0; i < length; i++) {
         mySwitch.timings[i] = pulseTrain[i];
     }
-
+    bool knownProtocol = false;
     // Attempt to decode with RC Switch
     for (int protocol = 1; protocol <= mySwitch.getNumProtos(); protocol++) {
         if (mySwitch.receiveProtocol(protocol, length)) {
-            
+            knownProtocol = true;
+            isDecoded = true;
+            decodedProtocol = protDecode[protocol];
             unsigned long long receivedValue = mySwitch.getReceivedValue();
             Serial.println("Decoded Signal:");
             Serial.print("Protocol: ");
@@ -567,9 +645,72 @@ void CC1101_CLASS::decodeProtocol(uint16_t *pulseTrain, size_t length) {
         mySwitch.resetAvailable();
                 return;
             }
+        }   
+    }
+
+    if(!knownProtocol) {
+     if(!knownProtocol) {
+
+          Serial.println("Unknown protocol.");
+
+      String binaryResult = "";  // To store the resulting binary string
+      unsigned long decimalValue = 0;  // To accumulate the decimal value
+      
+      // Generate binary string and calculate decimal value
+      for (int i = 0; i < sizeof(pulseTrain) / sizeof(pulseTrain[0]); i++) {
+          int absValue = abs(pulseTrain[i]);
+          int repeats = absValue / pulseTrain[0];  // Determine the number of repetitions
+      
+          // Append '1' or '0' based on the sign of the timing
+          for (int j = 0; j < repeats; j++) {
+              char bit = (pulseTrain[i] > 0) ? '1' : '0';
+              binaryResult += bit;
+              decimalValue = (decimalValue << 1) | (bit - '0'); // Update decimal value
+          }
+      }
+
+      // Convert decimal to hexadecimal
+      char hexBuffer[20];
+      snprintf(hexBuffer, sizeof(hexBuffer), "0x%lX", decimalValue);
+
+      // Output results
+      Serial.println("Binary Representation: " + binaryResult);
+      Serial.println("Decimal: " + String(decimalValue));
+      Serial.println("Hex: " + String(hexBuffer));
+
+      // Check if the value is within ASCII range and output the character
+      if (decimalValue <= 0x7F) {
+          char asciiBuffer[2] = {0};
+          asciiBuffer[0] = static_cast<char>(decimalValue);
+          Serial.print("ASCII: '");
+          Serial.write(asciiBuffer[0]);  // Print ASCII character
+          Serial.println("'");
+      }
+
+    // Convert binary result to ASCII stream (if possible)
+    String asciiStream = "";
+    for (size_t i = 0; i < binaryResult.length(); i += 8) {
+        String byteStr = binaryResult.substring(i, i + 8);
+        if (byteStr.length() == 8) {  // Ensure it's a complete byte
+            char asciiChar = static_cast<char>(strtol(byteStr.c_str(), nullptr, 2));
+            if (asciiChar >= 0x20 && asciiChar <= 0x7E) {  // Check if printable ASCII
+                asciiStream += asciiChar;
+            } else {
+                asciiStream += '.';  // Replace non-printable with a placeholder
+            }
+        }
+    }
+    
+    // Output ASCII stream if any
+    if (asciiStream.length() > 0) {
+        Serial.println("ASCII Stream: '" + asciiStream + "'");
+    } else {
+        Serial.println("No valid ASCII characters in the binary sequence.");
+    }
         }
     }
 }
+
 
 String CC1101_CLASS::generateFilename(float frequency, int modulation, float bandwidth)
 {
@@ -581,23 +722,7 @@ String CC1101_CLASS::generateFilename(float frequency, int modulation, float ban
     return String(filenameBuffer);
 }
 
-const char* CC1101_CLASS::presetToString(CC1101_PRESET preset) {
-    switch (preset) {
-        case AM650: return "AM650";
-        case AM270: return "AM270";
-        case FM238: return "FM238";
-        case FM476: return "FM476";
-        case FM95:  return "FM95";
-        case FSK12k: return "FSK12k";
-        case FM15k: return "FM15k";
-        case FSK25k: return "FSK25k";
-        case FSK31k: return "FSK31k";
-        case PAGER: return "PAGER";
-        case HND1:  return "HND1";
-        case HND2:  return "HND2";
-        default:    return "Unknown";
-    }
-}
+
 
 String CC1101_CLASS::generateRandomString(int length)
 {
